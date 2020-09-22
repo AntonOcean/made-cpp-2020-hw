@@ -4,6 +4,10 @@
 #include <stdlib.h>
 
 
+#define SIGN 0x8000000000000000
+#define EXPONENT 0x7FF0000000000000
+#define FRACTION 0x000FFFFFFFFFFFFF
+#define FRACTION_LAST_BIT 0x0008000000000000
 
 /**
  * Library-level functions.
@@ -14,53 +18,62 @@ uint64_t convertToUint64 (double number) {
     return *((uint64_t *)(&number));
 }
 
-bool getBit (const uint64_t number, const uint8_t index) {
-    /// Your code here...
-}
-
 
 /**
  * Checkers here:
  */
 
 bool checkForPlusZero (uint64_t number) {
-    /// Your code here.
+    return !number;
 }
 
 bool checkForMinusZero (uint64_t number) {
-    return number == 0x8000000000000000;
+    return number == SIGN;
 }
 
 bool checkForPlusInf (uint64_t number) {
-    /// Your code here.
+    return number == EXPONENT;
 }
 
 bool checkForMinusInf (uint64_t number) {
-    /// Your code here.
+    return number == SIGN + EXPONENT;
 }
 
 bool checkForPlusNormal (uint64_t number) {
-    /// Your code here.
+    uint64_t exponent = number & EXPONENT;
+    uint64_t sign = number & SIGN;
+    return !sign && 0 < exponent && exponent < EXPONENT;
 }
 
 bool checkForMinusNormal (uint64_t number) {
-    /// Your code here.
+    uint64_t exponent = number & EXPONENT;
+    uint64_t sign = number & SIGN;
+    return sign && 0 < exponent && exponent < EXPONENT;
 }
 
 bool checkForPlusDenormal (uint64_t number) {
-    /// Your code here.
+    uint64_t exponent = number & EXPONENT;
+    uint64_t fraction = number & FRACTION;
+    uint64_t sign = number & SIGN;
+    return !sign && !exponent && fraction;
 }
 
 bool checkForMinusDenormal (uint64_t number) {
-    /// Your code here.
+    uint64_t exponent = number & EXPONENT;
+    uint64_t fraction = number & FRACTION;
+    uint64_t sign = number & SIGN;
+    return sign && !exponent && fraction;
 }
 
 bool checkForSignalingNan (uint64_t number) {
-    /// Your code here.
+    uint64_t exponent = number & EXPONENT;
+    uint64_t fraction = number & FRACTION;
+    return exponent == EXPONENT && 0 < fraction && fraction <= FRACTION - FRACTION_LAST_BIT;
 }
 
 bool checkForQuietNan (uint64_t number) {
-    /// Your code here.
+    uint64_t exponent = number & EXPONENT;
+    return exponent == EXPONENT && number & FRACTION_LAST_BIT;
 }
 
 
